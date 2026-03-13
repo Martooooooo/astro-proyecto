@@ -1,11 +1,37 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Card from "../components/card.astro";
+import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
-	<Welcome />
+
+  <Card 
+    titulo="Rutina"
+    contenido="Pecho, Espalda, Piernas"
+  />
+
+  <section class="card">
+    <h2>Progreso</h2>
+
+    <button id="sumar">Entrené hoy</button>
+    <p id="contador">0</p>
+  </section>
+
+  <Card 
+    titulo="Objetivos"
+    contenido="Subir masa muscular"
+  />
+
+  <script is:inline>
+    const boton = document.querySelector("#sumar");
+    const texto = document.querySelector("#contador");
+
+    let contador = 0;
+
+    boton.addEventListener("click", () => {
+      contador++;
+      texto.textContent = contador;
+    });
+  </script>
+
 </Layout>
