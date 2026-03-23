@@ -1,26 +1,28 @@
 ---
+const { title = "Dashboard Fitness", description = "Dashboard fitness hecho con Astro" } = Astro.props;
 import "../styles/global.css";
 ---
 
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Dashboard Fitness</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
   </head>
 
   <body>
-
-    <header>
-      <h1>🏋️ Dashboard Fitness</h1>
+    <header class="site-header">
+      <h1>Dashboard Fitness</h1>
+      <p>Actividad diagnostico Frontend con Astro</p>
     </header>
 
-    <main>
+    <main class="page-container">
       <slot />
     </main>
 
-    <footer>
+    <footer class="site-footer">
       <p>Proyecto Astro - Frontend</p>
     </footer>
-
   </body>
 </html>

@@ -1,37 +1,248 @@
 ---
-import Card from "../components/card.astro";
+import Card from "../components/Card.astro";
 import Layout from "../layouts/Layout.astro";
+
+const summaryCards = [
+  { titulo: "Objetivo semanal", contenido: "6 entrenamientos", id: "goal-card" },
+  { titulo: "Horas de sueño", contenido: "8 horas promedio", id: "sleep-card" },
+  { titulo: "Hidratación", contenido: "2.2L por dia", id: "water-card" }
+];
 ---
 
-<Layout>
-
-  <Card 
-    titulo="Rutina"
-    contenido="Pecho, Espalda, Piernas"
-  />
-
-  <section class="card">
-    <h2>Progreso</h2>
-
-    <button id="sumar">Entrené hoy</button>
-    <p id="contador">0</p>
+<Layout
+  title="Dashboard Fitness | Astro"
+  description="Panel fitness responsive con secciones, JavaScript y fetch de API"
+>
+  <section class="hero" aria-labelledby="hero-title">
+    <div>
+      <h2 id="hero-title">Seguimiento de entrenamiento semanal</h2>
+      <p>
+        Organiza tus rutinas, marca tus sesiones y manten motivacion diaria con este panel estatico
+        en Astro.
+      </p>
+    </div>
+    <button id="theme-toggle" class="btn-outline" type="button" aria-label="Cambiar tema">
+      Cambiar tema
+    </button>
   </section>
 
-  <Card 
-    titulo="Objetivos"
-    contenido="Subir masa muscular"
-  />
+  <section class="cards-grid" aria-label="Resumen de estado">
+    {summaryCards.map((card) => <Card titulo={card.titulo} contenido={card.contenido} id={card.id} />)}
+  </section>
+
+  <section class="card tracker" aria-labelledby="tracker-title">
+    <h2 id="tracker-title">Progreso de sesiones</h2>
+    <p>Marca cada entrenamiento completado y guarda el resultado en tu navegador.</p>
+
+    <div class="button-row">
+      <button id="add-session" type="button">Entrene hoy</button>
+      <button id="reset-session" class="btn-outline" type="button">Reiniciar</button>
+    </div>
+
+    <p class="counter-line">
+      Sesiones completadas: <strong id="counter">0</strong>/6
+    </p>
+    <progress id="weekly-progress" max="6" value="0">0</progress>
+  </section>
+
+  <section class="card planner" aria-labelledby="planner-title">
+    <h2 id="planner-title">Rutina por dia</h2>
+    <label for="day-select">Selecciona un dia:</label>
+    <select id="day-select" name="day-select">
+      <option value="lunes">Lunes</option>
+      <option value="martes">Martes</option>
+      <option value="miercoles">Miercoles</option>
+      <option value="jueves">Jueves</option>
+      <option value="viernes">Viernes</option>
+      <option value="sabado">Sabado</option>
+      <option value="domingo">Domingo</option>
+    </select>
+    <ul id="routine-list" class="routine-list"></ul>
+  </section>
+
+  <section class="card motivation" aria-labelledby="motivation-title">
+    <h2 id="motivation-title">Motivacion diaria</h2>
+    <p id="advice-text">Presiona el boton para cargar un consejo.</p>
+    <button id="new-advice" type="button">Nuevo consejo</button>
+  </section>
+
+  <section class="card weight" aria-labelledby="weight-title">
+    <h2 id="weight-title">Seguimiento de peso</h2>
+    <p>Compara tu peso inicial con el actual para ver la tendencia.</p>
+
+    <div class="weight-grid">
+      <label for="start-weight">Peso inicial (kg)</label>
+      <input id="start-weight" type="number" min="30" max="250" step="0.1" placeholder="Ej: 78.5" />
+
+      <label for="current-weight">Peso actual (kg)</label>
+      <input id="current-weight" type="number" min="30" max="250" step="0.1" placeholder="Ej: 76.9" />
+    </div>
+
+    <button id="analyze-weight" type="button">Analizar progreso</button>
+    <p id="weight-result" class="weight-result">Carga tus valores para ver el analisis.</p>
+  </section>
 
   <script is:inline>
-    const boton = document.querySelector("#sumar");
-    const texto = document.querySelector("#contador");
+    const STORAGE_KEY = "fitness_sessions";
+    const THEME_KEY = "fitness_theme";
+    const WEIGHT_STORAGE_KEY = "fitness_weight";
+    const WEEKLY_GOAL = 6;
 
-    let contador = 0;
+    const addSessionButton = document.querySelector("#add-session");
+    const resetSessionButton = document.querySelector("#reset-session");
+    const counterText = document.querySelector("#counter");
+    const progressBar = document.querySelector("#weekly-progress");
+    const daySelect = document.querySelector("#day-select");
+    const routineList = document.querySelector("#routine-list");
+    const adviceText = document.querySelector("#advice-text");
+    const adviceButton = document.querySelector("#new-advice");
+    const themeToggleButton = document.querySelector("#theme-toggle");
+    const startWeightInput = document.querySelector("#start-weight");
+    const currentWeightInput = document.querySelector("#current-weight");
+    const analyzeWeightButton = document.querySelector("#analyze-weight");
+    const weightResult = document.querySelector("#weight-result");
 
-    boton.addEventListener("click", () => {
-      contador++;
-      texto.textContent = contador;
+    const routines = {
+      lunes: ["Push", "Pecho", "Hombros", "Triceps"],
+      martes: ["Pull", "Espalda", "Biceps", "Core"],
+      miercoles: ["Legs", "Cuadriceps", "Femoral", "Pantorrillas"],
+      jueves: ["Push", "Pecho", "Hombros", "Triceps"],
+      viernes: ["Pull", "Espalda", "Biceps", "Core"],
+      sabado: ["Legs", "Cuadriceps", "Gluteos", "Pantorrillas"],
+      domingo: ["Descanso", "Movilidad suave", "Estiramientos"]
+    };
+
+    const savedSessions = Number.parseInt(localStorage.getItem(STORAGE_KEY) ?? "0", 10);
+    let sessions = Number.isNaN(savedSessions) ? 0 : Math.min(savedSessions, WEEKLY_GOAL);
+
+    const applyTheme = (theme) => {
+      document.body.dataset.theme = theme;
+      localStorage.setItem(THEME_KEY, theme);
+    };
+
+    const updateTracker = () => {
+      counterText.textContent = String(sessions);
+      progressBar.value = sessions;
+      progressBar.textContent = String(sessions);
+      localStorage.setItem(STORAGE_KEY, String(sessions));
+    };
+
+    const renderRoutine = (day) => {
+      const items = routines[day] ?? [];
+      routineList.innerHTML = "";
+
+      items.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        routineList.appendChild(li);
+      });
+    };
+
+    const spanishAdvice = [
+      "La constancia gana cuando la motivacion falla.",
+      "No entrenes perfecto, entrena seguido.",
+      "Dormir bien tambien es parte del progreso.",
+      "Un dia flojo no arruina una semana fuerte.",
+      "La tecnica primero, el peso despues.",
+      "Hidratarte bien mejora tu rendimiento.",
+      "Celebra cada entrenamiento completado."
+    ];
+
+    const showRandomAdvice = () => {
+      const randomIndex = Math.floor(Math.random() * spanishAdvice.length);
+      adviceText.textContent = spanishAdvice[randomIndex];
+    };
+
+    const renderWeightTrend = (startWeight, currentWeight) => {
+      const difference = Number((currentWeight - startWeight).toFixed(1));
+
+      if (Math.abs(difference) < 0.2) {
+        weightResult.textContent = `Tendencia estable: te mantuviste en ${currentWeight.toFixed(1)} kg.`;
+        return;
+      }
+
+      if (difference < 0) {
+        weightResult.textContent = `Bajaste ${Math.abs(difference).toFixed(1)} kg. Peso actual: ${currentWeight.toFixed(1)} kg.`;
+        return;
+      }
+
+      weightResult.textContent = `Subiste ${difference.toFixed(1)} kg. Peso actual: ${currentWeight.toFixed(1)} kg.`;
+    };
+
+    const loadWeightData = () => {
+      const raw = localStorage.getItem(WEIGHT_STORAGE_KEY);
+
+      if (!raw) {
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+
+        if (typeof parsed.startWeight === "number") {
+          startWeightInput.value = String(parsed.startWeight);
+        }
+
+        if (typeof parsed.currentWeight === "number") {
+          currentWeightInput.value = String(parsed.currentWeight);
+        }
+
+        if (typeof parsed.startWeight === "number" && typeof parsed.currentWeight === "number") {
+          renderWeightTrend(parsed.startWeight, parsed.currentWeight);
+        }
+      } catch (error) {
+        localStorage.removeItem(WEIGHT_STORAGE_KEY);
+      }
+    };
+
+    addSessionButton?.addEventListener("click", () => {
+      sessions = Math.min(sessions + 1, WEEKLY_GOAL);
+      updateTracker();
     });
-  </script>
 
+    resetSessionButton?.addEventListener("click", () => {
+      sessions = 0;
+      updateTracker();
+    });
+
+    daySelect?.addEventListener("change", (event) => {
+      renderRoutine(event.target.value);
+    });
+
+    adviceButton?.addEventListener("click", showRandomAdvice);
+
+    analyzeWeightButton?.addEventListener("click", () => {
+      const startWeight = Number.parseFloat(startWeightInput?.value ?? "");
+      const currentWeight = Number.parseFloat(currentWeightInput?.value ?? "");
+
+      if (Number.isNaN(startWeight) || Number.isNaN(currentWeight)) {
+        weightResult.textContent = "Ingresa ambos pesos para analizar tu progreso.";
+        return;
+      }
+
+      localStorage.setItem(
+        WEIGHT_STORAGE_KEY,
+        JSON.stringify({
+          startWeight,
+          currentWeight,
+          updatedAt: new Date().toISOString()
+        })
+      );
+
+      renderWeightTrend(startWeight, currentWeight);
+    });
+
+    themeToggleButton?.addEventListener("click", () => {
+      const current = document.body.dataset.theme === "dark" ? "light" : "dark";
+      applyTheme(current);
+    });
+
+    const savedTheme = localStorage.getItem(THEME_KEY) ?? "light";
+    applyTheme(savedTheme);
+
+    updateTracker();
+    renderRoutine(daySelect?.value ?? "lunes");
+    showRandomAdvice();
+    loadWeightData();
+  </script>
 </Layout>

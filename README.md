@@ -1,46 +1,80 @@
-# Astro Starter Kit: Basics
+# Dashboard Fitness con Astro
 
-```sh
-npm create astro@latest -- --template basics
+Proyecto estatico realizado para la actividad diagnostico de Frontend.
+
+## Explicacion del proyecto
+
+El proyecto es un dashboard fitness que centraliza seguimiento semanal de entrenamiento.
+Incluye una pagina principal con secciones semanticas y comportamiento en cliente con JavaScript.
+
+Secciones principales:
+
+- Hero de contexto del panel
+- Resumen de metricas
+- Progreso de sesiones semanales (meta de 6 entrenamientos)
+- Rutina por dia en formato Push / Pull / Legs
+- Motivacion diaria con consejos aleatorios en espanol
+- Seguimiento de peso con analisis de tendencia
+
+## Funcionalidades interactivas
+
+- Boton Entrene hoy para subir el contador semanal y la barra de progreso
+- Boton Reiniciar para volver el contador a cero
+- Selector de dia para ver la rutina correspondiente
+- Consejos de motivacion en espanol al presionar Nuevo consejo
+- Cambio de tema claro/oscuro con persistencia
+- Analisis de peso (inicial vs actual) que muestra si subiste, bajaste o te mantuviste
+
+Todos los datos interactivos se guardan en localStorage para mantener el estado al recargar.
+
+## Herramientas usadas
+
+- Astro
+- HTML semantico
+- CSS moderno y responsive
+- JavaScript vanilla (eventos, manipulacion de DOM y localStorage)
+
+## Requisitos de la consigna cubiertos
+
+- 1 pagina principal
+- 3 o mas secciones
+- Responsive basico para mobile y desktop
+- Comportamiento JavaScript (contador, rutinas dinamicas, consejos y analisis de peso)
+
+Extras implementados:
+
+- Componente reutilizable (Card.astro)
+- Sistema de consejos en espanol
+- Dark mode con persistencia en localStorage
+- Seguimiento de peso corporal con tendencia
+
+## Instrucciones para ejecutarlo
+
+1. Instalar dependencias:
+
+```bash
+npm install
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+2. Ejecutar en desarrollo:
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+```bash
+npm run dev
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+3. Build de produccion:
 
-## 🧞 Commands
+```bash
+npm run build
+```
 
-All commands are run from the root of the project, from a terminal:
+4. Preview del build:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+```bash
+npm run preview
+```
 
-## 👀 Want to learn more?
+## Recomendacion para entrega
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- Subir commits progresivos (estructura, estilos, JS, README)
+- Agregar deploy en Vercel o Netlify como bonus

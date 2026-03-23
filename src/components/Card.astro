@@ -1,8 +1,8 @@
 ---
-const { titulo, contenido } = Astro.props;
+const { titulo, contenido, id } = Astro.props;
 ---
 
-<section class="card">
+<article class="card" id={id}>
   <h2>{titulo}</h2>
   <p>{contenido}</p>
-</section>
+</article>
