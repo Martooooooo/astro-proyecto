@@ -73,8 +73,4 @@ npm run build
 ```bash
 npm run preview
 ```
-
-## Recomendacion para entrega
-
-- Subir commits progresivos (estructura, estilos, JS, README)
-- Agregar deploy en Vercel o Netlify como bonus
+Martin Biosca 5toE
